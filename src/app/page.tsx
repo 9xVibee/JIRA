@@ -1,6 +1,4 @@
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import React from 'react';
 
 const Home = () => {
   return (
@@ -12,7 +10,6 @@ const Home = () => {
       <Button variant={'outline'}>outline</Button>
       <Button variant={'secondary'}>secondary</Button>
       <Button variant={'teritary'}>Teritary</Button>
-      <Input />
     </div>
   );
 };
