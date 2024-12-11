@@ -5,6 +5,7 @@ import { FcGoogle } from 'react-icons/fc';
 import { FaGithub } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import Link from 'next/link';
 
 import { DottedSeparator } from '@/components/dotted-separator';
 import { Button } from '@/components/ui/button';
@@ -17,18 +18,16 @@ import {
   FormItem,
   FormField,
 } from '@/components/ui/form';
-import Link from 'next/link';
-
-/* ---------- form Schema ---------- */
-const formSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1, 'Required'),
-});
+import { loginSchema } from './../schemas';
+import { useLogin } from '../api/use-login';
 
 export const SignInCard = () => {
+  /* ---------- tanstack state ---------- */
+  const { mutate } = useLogin();
+
   /* ---------- useForm ---------- */
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof loginSchema>>({
+    resolver: zodResolver(loginSchema),
     defaultValues: {
       email: '',
       password: '',
@@ -36,8 +35,8 @@ export const SignInCard = () => {
   });
 
   /* ---------- functions ---------- */
-  const hanldeOnSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(values, 'values');
+  const hanldeOnSubmit = (values: z.infer<typeof loginSchema>) => {
+    mutate({ json: values });
   };
 
   return (

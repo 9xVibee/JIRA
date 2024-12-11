@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { DottedSeparator } from '@/components/dotted-separator';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+
 import {
   Form,
   FormControl,
@@ -24,18 +25,16 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-
-/* ---------- form Schema ---------- */
-const formSchema = z.object({
-  name: z.string().min(3),
-  email: z.string().email(),
-  password: z.string().min(1, 'Required'),
-});
+import { registerSchema } from './../schemas';
+import { useRegister } from '../api/use-sign-up';
 
 export const SignUpCard = () => {
+  /* ---------- tanstack state ---------- */
+  const { mutate } = useRegister();
+
   /* ---------- useForm ---------- */
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof registerSchema>>({
+    resolver: zodResolver(registerSchema),
     defaultValues: {
       name: '',
       email: '',
@@ -44,8 +43,10 @@ export const SignUpCard = () => {
   });
 
   /* ---------- functions ---------- */
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(values, 'values');
+  const onSubmit = (values: z.infer<typeof registerSchema>) => {
+    mutate({
+      json: values,
+    });
   };
 
   return (
