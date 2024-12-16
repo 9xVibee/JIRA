@@ -30,7 +30,7 @@ import { useRegister } from '../api/use-sign-up';
 
 export const SignUpCard = () => {
   /* ---------- tanstack state ---------- */
-  const { mutate } = useRegister();
+  const { mutate, isPending } = useRegister();
 
   /* ---------- useForm ---------- */
   const form = useForm<z.infer<typeof registerSchema>>({
@@ -112,7 +112,7 @@ export const SignUpCard = () => {
               )}
             />
 
-            <Button disabled={false} size="lg" className="w-full">
+            <Button disabled={isPending} size="lg" className="w-full">
               Sign Up
             </Button>
           </form>
@@ -124,11 +124,21 @@ export const SignUpCard = () => {
       </div>
 
       <CardContent className="p-7 flex flex-col gap-y-4">
-        <Button variant={'secondary'} size={'lg'} className="w-full">
+        <Button
+          disabled={isPending}
+          variant={'secondary'}
+          size={'lg'}
+          className="w-full"
+        >
           <FcGoogle className="mr-2 size-5" />
           SignUp with Google
         </Button>
-        <Button variant={'secondary'} size={'lg'} className="w-full">
+        <Button
+          disabled={isPending}
+          variant={'secondary'}
+          size={'lg'}
+          className="w-full"
+        >
           <FaGithub className="mr-2 size-5" />
           SignUp with Github
         </Button>
