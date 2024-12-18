@@ -1,5 +1,5 @@
 import { protect } from '@/features/auth/actions';
-import { CreateWorkspaceForm } from '@/features/workspaces/components/create-workspace-form';
+import { getWorkspaces } from '@/features/workspaces/actions';
 import { redirect } from 'next/navigation';
 
 const Home = async () => {
@@ -7,11 +7,13 @@ const Home = async () => {
 
   if (!user) redirect('/sign-in');
 
-  return (
-    <div className="p-7 bg-gray-400">
-      <CreateWorkspaceForm />
-    </div>
-  );
+  const workspaces = await getWorkspaces();
+
+  if (workspaces?.total === 0) {
+    redirect('/workspaces/create');
+  } else {
+    redirect(`/workspaces/${workspaces?.documents[0].$id}`);
+  }
 };
 
 export default Home;
