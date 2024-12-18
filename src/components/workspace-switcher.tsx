@@ -14,7 +14,9 @@ import {
 import { WorkspaceAvatar } from '@/features/workspaces/components/workspace-avatar';
 
 const WorkspaceSwitcher = () => {
-  const { data: workspaces } = useGetWorkspaces();
+  const { data: workspaces, isPending } = useGetWorkspaces();
+
+  if (isPending || !workspaces) return <></>;
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -28,7 +30,7 @@ const WorkspaceSwitcher = () => {
           <SelectValue placeholder="No workspace selected" />
         </SelectTrigger>
         <SelectContent>
-          {workspaces?.documents.map((workspace) => {
+          {workspaces.documents.map((workspace) => {
             return (
               <SelectItem value={workspace.name} key={workspace.$id}>
                 <div className="flex justify-start items-center gap-3 font-medium">
