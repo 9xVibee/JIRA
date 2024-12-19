@@ -1,9 +1,9 @@
-import { protect } from '@/features/auth/actions';
-import { getWorkspaces } from '@/features/workspaces/actions';
+import { getCurrent } from '@/features/auth/queries';
+import { getWorkspaces } from '@/features/workspaces/queries';
 import { redirect } from 'next/navigation';
 
 const Home = async () => {
-  const user = await protect();
+  const user = await getCurrent();
 
   if (!user) redirect('/sign-in');
 

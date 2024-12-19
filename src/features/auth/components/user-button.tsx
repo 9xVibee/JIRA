@@ -10,12 +10,12 @@ import {
 import { DottedSeparator } from '@/components/dotted-separator';
 import { Loader, LogOut } from 'lucide-react';
 
-import { useCurrent } from '@/features/auth/api/use-current';
+import { getCurrent } from '@/features/auth/api/use-current';
 import { useLogout } from '@/features/auth/api/use-logout';
 
 export const UserButton = () => {
   /* ---------- tanstack state ---------- */
-  const { data: user, isLoading } = useCurrent();
+  const { data: user, isLoading } = getCurrent();
   const { mutate: logout } = useLogout();
 
   if (isLoading) {
