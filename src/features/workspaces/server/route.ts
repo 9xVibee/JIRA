@@ -15,6 +15,8 @@ import {
 
 import { MemberRole } from '@/features/members/types';
 import { createWorkspaceSchema, updateWorkspaceSchema } from '../schemas';
+import { z } from 'zod';
+import { Workspace } from '../types';
 
 const app = new Hono()
   .get('/', sessionMiddleware, async (c) => {
@@ -186,6 +188,106 @@ const app = new Hono()
         $id: workspaceId,
       },
     });
-  });
+  })
+  .post('/:workspaceId/reset-invite-code', sessionMiddleware, async (c) => {
+    const databases = c.get('databases');
+    const user = c.get('user');
+    const { workspaceId } = c.req.param();
+
+    const member = await getMember({
+      workspaceId,
+      databases,
+      userId: user.$id,
+    });
+
+    if (!member || member.role !== MemberRole.ADMIN) {
+      return c.json(
+        {
+          error: 'Unauthorized',
+        },
+        401
+      );
+    }
+
+    const workspace = await databases.updateDocument(
+      DATABASE_ID,
+      WORKSPACES_ID,
+      workspaceId,
+      {
+        inviteCode: generateInviteCode(10),
+      }
+    );
+
+    return c.json({
+      data: workspace,
+    });
+  })
+  .post(
+    '/:workspaceId/join',
+    sessionMiddleware,
+    zValidator(
+      'json',
+      z.object({
+        code: z.string(),
+      })
+    ),
+    async (c) => {
+      const { workspaceId } = c.req.param();
+      const { code } = c.req.valid('json');
+
+      const databases = c.get('databases');
+      const user = c.get('user');
+
+      const member = await getMember({
+        databases,
+        userId: user.$id,
+        workspaceId,
+      });
+
+      /* checking wheather the user is already a memeber of the workspace or not */
+      if (member) {
+        return c.json(
+          {
+            error: 'Already a member',
+          },
+          400
+        );
+      }
+
+      const workspace = await databases.getDocument<Workspace>(
+        DATABASE_ID,
+        WORKSPACES_ID,
+        workspaceId
+      );
+
+      if (!workspace) {
+        return c.json(
+          {
+            error: 'Workspace not found',
+          },
+          400
+        );
+      }
+
+      if (workspace.inviteCode !== code) {
+        return c.json(
+          {
+            error: 'Invalid Invite code',
+          },
+          400
+        );
+      }
+
+      await databases.createDocument(DATABASE_ID, MEMBERS_ID, ID.unique(), {
+        userId: user.$id,
+        workspaceId,
+        role: MemberRole.MEMBER,
+      });
+
+      return c.json({
+        data: workspace,
+      });
+    }
+  );
 
 export default app;

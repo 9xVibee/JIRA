@@ -5,6 +5,8 @@ import { useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -19,8 +21,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { DottedSeparator } from '@/components/dotted-separator';
-import { useRouter } from 'next/navigation';
-import { ArrowLeftIcon, ImageIcon } from 'lucide-react';
+import { ArrowLeftIcon, CopyIcon, ImageIcon } from 'lucide-react';
 
 import { updateWorkspaceSchema } from '../schemas';
 import { cn } from '@/lib/utils';
@@ -28,6 +29,7 @@ import { Workspace } from '../types';
 import { useUpdateWorkspace } from '../api/use-update-workspace';
 import { useConfirm } from '@/hooks/use-confirm';
 import { useDeleteWorkspace } from '../api/use-delete-workspace';
+import { useResetInviteCode } from '../api/use-reset-invite-code';
 
 interface EditWorkspaceFormProps {
   onCancel?: () => void;
@@ -42,10 +44,17 @@ export const EditWorkspaceForm = ({
   const router = useRouter();
   const { mutate, isPending } = useUpdateWorkspace();
   const { mutate: deleteWorkspace } = useDeleteWorkspace();
+  const { mutate: resetInviteCode } = useResetInviteCode();
 
   const [DeleteDialog, confirmDelete] = useConfirm({
     title: 'Delete Workspace',
     message: 'Are you sure you want to delete this workspace?',
+    variant: 'destructive',
+  });
+
+  const [ResetDialog, confirmReset] = useConfirm({
+    title: 'Reset Invite Code',
+    message: 'Are you sure you want to reset invite code?',
     variant: 'destructive',
   });
 
@@ -102,12 +111,37 @@ export const EditWorkspaceForm = ({
     );
   };
 
+  const handleResetInviteCode = async () => {
+    const ok = await confirmReset();
+
+    if (!ok) return;
+
+    resetInviteCode(
+      {
+        param: { workspaceId: initialValues.$id },
+      },
+      {
+        onSuccess: () => {
+          router.refresh();
+        },
+      }
+    );
+  };
+
+  const fullInviteLink = `${window.location.origin}/workspaces/${initialValues.$id}/join/${initialValues.inviteCode}`;
+  const handleCopyInviteLink = () => {
+    navigator.clipboard.writeText(fullInviteLink).then(() => {
+      toast.success('Invite link copied to clipboard');
+    });
+  };
+
   /* ---------- useRef ---------- */
   const inputRef = useRef<HTMLInputElement>(null);
 
   return (
     <div className="flex flex-col gap-y-4">
       <DeleteDialog />
+      <ResetDialog />
 
       <Card className="w-full h-full border-none shadow-none">
         <CardHeader className="flex flex-row items-center gap-x-4 p-7 space-y-0">
@@ -246,6 +280,38 @@ export const EditWorkspaceForm = ({
               </div>
             </form>
           </Form>
+        </CardContent>
+      </Card>
+
+      <Card className="w-full h-full border-none shadow-none">
+        <CardContent className="p-7">
+          <div className="flex flex-col">
+            <h3 className="font-bold">Invite Members</h3>
+            <p className="text-sm text-muted-foreground">
+              Use the invite link to add members to your workspace.
+            </p>
+            <div className="mt-4">
+              <div className="flex items-center gap-x-2">
+                <Input disabled value={fullInviteLink} />
+                <Button
+                  variant={'secondary'}
+                  className="size-12"
+                  onClick={() => handleCopyInviteLink()}
+                >
+                  <CopyIcon />
+                </Button>
+              </div>
+            </div>
+            <Button
+              className="mt-6 w-fit ml-auto"
+              size={'sm'}
+              variant={'destructive'}
+              disabled={isPending}
+              onClick={handleResetInviteCode}
+            >
+              Reset invite code
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
