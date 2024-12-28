@@ -1,15 +1,18 @@
 'use client';
 
 import Link from 'next/link';
-import { Fragment } from 'react';
+import { useEffect, useState } from 'react';
+import {
+  AnimatePresence,
+  motion,
+  useAnimate,
+  usePresence,
+} from 'framer-motion';
 
-import { ArrowLeftIcon, MoreVerticalIcon } from 'lucide-react';
+import { ArrowLeftIcon, Loader, MoreVerticalIcon } from 'lucide-react';
 
 import { MemberAvatar } from './workspace-avatar';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { DottedSeparator } from '@/components/dotted-separator';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,6 +29,9 @@ import { useConfirm } from '@/hooks/use-confirm';
 import { MemberRole } from '../types';
 
 export const MembersList = () => {
+  const [members, setMembers] = useState({ documents: [] });
+  const [memberId, setMemberId] = useState<string | null>(null);
+
   /* --------------- hooks --------------- */
   const workspaceId = useWorkspaceId();
 
@@ -47,6 +53,7 @@ export const MembersList = () => {
   };
 
   const handleDeleteMember = async (memberId: string) => {
+    setMemberId(memberId);
     const ok = await confirmDelete();
 
     if (!ok) return;
@@ -55,16 +62,28 @@ export const MembersList = () => {
       { param: { memberId } },
       {
         onSuccess: () => {
-          window.location.reload();
+          setMembers((prev) => ({
+            documents: prev.documents.filter(
+              (member) => member.$id !== memberId
+            ),
+          }));
+
+          setMemberId(null);
         },
       }
     );
   };
 
+  useEffect(() => {
+    if (data) {
+      setMembers(data);
+    }
+  }, [data]);
+
   return (
-    <Card className="w-full h-full border-none shadow-none">
+    <div className="w-full h-full flex flex-col gap-y-3">
       <DeleteDialog />
-      <CardHeader className="flex flex-row items-center gap-x-4 p-7 space-y-0">
+      <div className="flex flex-row bg-white shadow-box items-center rounded-lg gap-x-4 p-3 space-y-0">
         <Button variant={'secondary'} size={'sm'} asChild>
           <Link href={'/'}>
             <ArrowLeftIcon className="size-4" />
@@ -72,76 +91,161 @@ export const MembersList = () => {
           </Link>
         </Button>
 
-        <CardTitle className="text-xl font-bold">Members List</CardTitle>
-      </CardHeader>
-
-      <div className="px-7">
-        <DottedSeparator />
+        <p className="text-xl font-bold">Members List</p>
       </div>
 
-      <CardContent className="p-7">
-        {data?.documents.map((member, index) => (
-          <Fragment key={`${member.$id}-${index}`}>
-            <div className="flex items-center gap-2">
-              <MemberAvatar
-                name={member.name}
-                className="size-10"
-                fallbackClassName="text-lg"
-              />
+      <div className="p-7 rounded-lg flex flex-col gap-y-2 w-full">
+        <AnimatePresence>
+          {members?.documents.map((member, index) => (
+            <Member
+              key={`${member.$id}-${index}`}
+              deletePending={deletePending}
+              updatePending={updatePending}
+              handleDeleteMember={handleDeleteMember}
+              handleUpdateMember={handleUpdateMember}
+              index={index}
+              member={member}
+              memberId={memberId}
+            />
+          ))}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+};
 
-              <div className="flex flex-col">
-                <p className="text-sm font-medium">{member.name}</p>
-                <p className="text-xs text-muted-foreground">{member.email}</p>
-              </div>
+const Member = ({
+  member,
+  handleDeleteMember,
+  handleUpdateMember,
+  deletePending,
+  updatePending,
+  index,
+  memberId,
+}) => {
+  const [isPresent, safeToRemove] = usePresence();
+  const [scope, animate] = useAnimate();
 
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    className="ml-auto"
-                    variant={'secondary'}
-                    size={'icon'}
-                  >
-                    <MoreVerticalIcon className="size-4 text-muted-foreground" />
-                  </Button>
-                </DropdownMenuTrigger>
+  useEffect(() => {
+    if (!isPresent) {
+      const exitAnimation = async () => {
+        await animate(
+          scope.current,
+          {
+            zIndex: 99,
+            scale: 1.025,
+            y: 10,
+          },
+          {
+            duration: 0.2,
+            type: 'spring',
+            damping: 15,
+            stiffness: 250,
+            ease: 'easeIn',
+          }
+        );
+        await animate(
+          '.member-details',
+          {
+            textDecoration: 'line-through',
+            color: 'red',
+          },
+          {
+            duration: 0.2,
+            ease: 'easeIn',
+          }
+        );
+        await animate(
+          scope.current,
+          {
+            opacity: 0,
+            x: -50,
+          },
+          {
+            delay: 0.7,
+          }
+        );
+        safeToRemove();
+      };
 
-                <DropdownMenuContent side="bottom" align="end">
-                  <DropdownMenuItem
-                    className="font-medium cursor-pointer"
-                    onClick={() =>
-                      handleUpdateMember(member.$id, MemberRole.ADMIN)
-                    }
-                    disabled={deletePending || updatePending}
-                  >
-                    Set as Administrator
-                  </DropdownMenuItem>
+      exitAnimation();
+    }
+  }, [isPresent]);
 
-                  <DropdownMenuItem
-                    className="font-medium cursor-pointer"
-                    onClick={() =>
-                      handleUpdateMember(member.$id, MemberRole.MEMBER)
-                    }
-                    disabled={deletePending || updatePending}
-                  >
-                    Set as Member
-                  </DropdownMenuItem>
+  return (
+    <motion.div
+      className="relative !bg-white shadow-box rounded-md p-2 w-full"
+      ref={scope}
+      initial={{ opacity: 0, x: 50 }}
+      animate={{
+        opacity: 1,
+        x: 0,
+        transition: {
+          delay: index * 0.1,
+          duration: 0.3,
+          type: 'spring',
+          damping: 15,
+          stiffness: 250,
+        },
+      }}
+    >
+      <div className="flex items-center gap-2">
+        <MemberAvatar
+          name={member.name}
+          className="size-10"
+          fallbackClassName="text-lg"
+        />
 
-                  <DropdownMenuItem
-                    className="font-medium text-amber-700 cursor-pointer"
-                    onClick={() => handleDeleteMember(member.$id)}
-                    disabled={deletePending || updatePending}
-                  >
-                    Remove {member.name}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-            {index < data.documents.length - 1 && (
-              <Separator className="my-2.5" />
-            )}
-          </Fragment>
-        ))}
-      </CardContent>
-    </Card>
+        <div className="flex flex-col">
+          <p className="text-sm font-medium member-details">{member.name}</p>
+          <p className="text-xs text-muted-foreground member-details">
+            {member.email}
+          </p>
+        </div>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              className="ml-auto"
+              variant={'secondary'}
+              size={'icon'}
+              disabled={deletePending || updatePending}
+            >
+              {(deletePending || updatePending) && memberId === member.$id ? (
+                <Loader className="size-4 text-muted-foreground animate-spin" />
+              ) : (
+                <MoreVerticalIcon className="size-4 text-muted-foreground" />
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent side="bottom" align="end">
+            <DropdownMenuItem
+              className="font-medium cursor-pointer"
+              onClick={() => handleUpdateMember(member.$id, MemberRole.ADMIN)}
+              disabled={deletePending || updatePending}
+            >
+              Set as Administrator
+            </DropdownMenuItem>
+
+            <DropdownMenuItem
+              className="font-medium cursor-pointer"
+              onClick={() => handleUpdateMember(member.$id, MemberRole.MEMBER)}
+              disabled={deletePending || updatePending}
+            >
+              Set as Member
+            </DropdownMenuItem>
+
+            <DropdownMenuItem
+              className="font-medium text-amber-700 cursor-pointer"
+              onClick={() => handleDeleteMember(member.$id)}
+              disabled={deletePending || updatePending}
+            >
+              Remove {member.name}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </motion.div>
   );
 };

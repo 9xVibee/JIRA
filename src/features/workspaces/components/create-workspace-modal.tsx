@@ -2,14 +2,13 @@
 
 import ResponsiveModal from '@/components/responsive-moda';
 import { CreateWorkspaceForm } from './create-workspace-form';
-import { useCreateWorkspaceModal } from '../hooks/use-create-workspace-moda';
 
-const CreateWorkspaceModal = () => {
-  const { isOpen, close, setIsOpen } = useCreateWorkspaceModal();
+import { ModalProps } from '@/features/types';
 
+const CreateWorkspaceModal = ({ isOpen, setIsOpen }: ModalProps) => {
   return (
     <ResponsiveModal open={isOpen} onOpenChange={setIsOpen}>
-      <CreateWorkspaceForm onCancel={close} />
+      <CreateWorkspaceForm onCancel={() => setIsOpen(false)} />
     </ResponsiveModal>
   );
 };
