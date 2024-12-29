@@ -5,41 +5,39 @@ import { InferRequestType, InferResponseType } from 'hono';
 import { client } from '@/lib/rpc';
 
 type ResponseType = InferResponseType<
-  (typeof client.api.workspaces)[':workspaceId']['$patch'],
+  (typeof client.api.projects)[':projectId']['$delete'],
   200
 >;
 type RequestType = InferRequestType<
-  (typeof client.api.workspaces)[':workspaceId']['$patch']
+  (typeof client.api.projects)[':projectId']['$delete']
 >;
 
-export const useUpdateWorkspace = () => {
+export const useDeleteProject = () => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation<ResponseType, Error, RequestType>({
-    mutationFn: async ({ form, param }) => {
-      const response = await client.api.workspaces[':workspaceId']['$patch']({
-        form,
+    mutationFn: async ({ param }) => {
+      const response = await client.api.projects[':projectId']['$delete']({
         param,
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update workspace');
+        throw new Error('Failed to delete project');
       }
 
       return await response.json();
     },
     onSuccess: ({ data }) => {
-      toast.success('Workspace Updated');
+      toast.success('Project Deleted');
       queryClient.invalidateQueries({
-        queryKey: ['workspaces'],
+        queryKey: ['projects'],
       });
-
       queryClient.invalidateQueries({
-        queryKey: ['workspace', data.$id],
+        queryKey: ['Projectroject', data.$id],
       });
     },
     onError: () => {
-      toast.error('Failed to update workspace');
+      toast.error('Failed to create Project');
     },
   });
 

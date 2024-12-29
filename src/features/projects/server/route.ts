@@ -4,11 +4,11 @@ import { zValidator } from '@hono/zod-validator';
 import { ID, Query } from 'node-appwrite';
 
 import { getMember } from '@/features/members/utils';
+import { createProjectSchema, updateProjectSchema } from '../schemas';
 
 import { sessionMiddleware } from '@/lib/session-middleware';
 
 import { DATABASE_ID, PROJECT_ID, IMAGES_BUCKET_ID } from '@/config';
-import { createProjectSchema } from '../schemas';
 
 const app = new Hono()
   .post(
@@ -107,6 +107,116 @@ const app = new Hono()
         data: projects,
       });
     }
-  );
+  )
+  .patch(
+    '/:projectId',
+    sessionMiddleware,
+    zValidator('form', updateProjectSchema),
+    async (c) => {
+      const databases = c.get('databases');
+      const storage = c.get('storage');
+      const user = c.get('user');
+
+      const { projectId } = c.req.param();
+      const { name, image } = c.req.valid('form');
+
+      const existingProject = await databases.getDocument(
+        DATABASE_ID,
+        PROJECT_ID,
+        projectId
+      );
+
+      if (!existingProject) {
+        return c.json({ error: 'Project not found' }, 404);
+      }
+
+      const member = await getMember({
+        databases,
+        userId: user.$id,
+        workspaceId: existingProject.workspaceId,
+      });
+
+      if (!member) {
+        return c.json(
+          {
+            error: 'Unauthorized',
+          },
+          401
+        );
+      }
+
+      let uploadedImageUrl: string | undefined;
+
+      if (image instanceof File) {
+        const file = await storage.createFile(
+          IMAGES_BUCKET_ID,
+          ID.unique(),
+          image
+        );
+
+        const arrayBuffer = await storage.getFilePreview(
+          IMAGES_BUCKET_ID,
+          file.$id
+        );
+
+        uploadedImageUrl = `data:image/png;base64,${Buffer.from(
+          arrayBuffer
+        ).toString('base64')}`;
+      } else uploadedImageUrl = image;
+
+      const workspace = await databases.updateDocument(
+        DATABASE_ID,
+        PROJECT_ID,
+        projectId,
+        {
+          name,
+          imageUrl: uploadedImageUrl,
+        }
+      );
+
+      return c.json({
+        data: workspace,
+      });
+    }
+  )
+  .delete('/:projectId', sessionMiddleware, async (c) => {
+    const databases = c.get('databases');
+    const user = c.get('user');
+    const { projectId } = c.req.param();
+
+    const existingProject = await databases.getDocument(
+      DATABASE_ID,
+      PROJECT_ID,
+      projectId
+    );
+
+    if (!existingProject) {
+      return c.json({ error: 'Project not found' }, 404);
+    }
+
+    const member = await getMember({
+      workspaceId: existingProject.workspaceId,
+      databases,
+      userId: user.$id,
+    });
+
+    if (!member) {
+      return c.json(
+        {
+          error: 'Unauthorized',
+        },
+        401
+      );
+    }
+
+    /* TODO: delete tasks */
+    await databases.deleteDocument(DATABASE_ID, PROJECT_ID, projectId);
+
+    return c.json({
+      data: {
+        $id: projectId,
+      },
+    });
+  });
 
 export default app;

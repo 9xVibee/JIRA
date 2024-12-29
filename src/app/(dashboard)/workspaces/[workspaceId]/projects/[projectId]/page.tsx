@@ -20,7 +20,7 @@ const ProjectIdPage = async ({ params }: ProjectIdPageProps) => {
   const user = await getCurrent();
   if (!user) redirect('/sign-in');
 
-  const { projectId } = params;
+  const { projectId } = await params;
 
   const initialValues = await getProject({ projectId });
 
@@ -43,7 +43,7 @@ const ProjectIdPage = async ({ params }: ProjectIdPageProps) => {
         <div>
           <Button variant={'secondary'} size={'sm'} asChild>
             <Link
-              href={`/workspaces/${initialValues.workspaceId}/projects/settings/${projectId}`}
+              href={`/workspaces/${initialValues.workspaceId}/projects/${projectId}/settings`}
             >
               <PencilIcon />
               Edit Project

@@ -6,7 +6,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ImageIcon } from 'lucide-react';
 import Image from 'next/image';
-// import { useRouter } from 'next/navigation';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -63,12 +62,8 @@ export const CreateProjectForm = ({ onCancel }: CreateProjectFormProps) => {
         form: finalValues,
       },
       {
-        onSuccess: ({ data }) => {
+        onSuccess: () => {
           form.reset();
-          console.log(data, 'project_Data');
-
-          // TODO : redirect to project screen
-          // router.push(`/projects/${data?.$id}`);
         },
       }
     );
