@@ -20,7 +20,7 @@ const WorkspaceJoinPage = async ({ params }: WorkspaceJoinPageProps) => {
   const workspace = await getWorkspaceInfo({ workspaceId });
 
   if (!workspace?.name) {
-    redirect('/');
+    throw new Error('Workspace not found');
   }
 
   return (

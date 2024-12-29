@@ -20,7 +20,7 @@ const WorkspaceIdSettingPage = async ({
   const initialValues = await getWorkspace({ workspaceId: params.workspaceId });
 
   if (!initialValues) {
-    redirect(`/workspaces/${params.workspaceId}`);
+    throw new Error('Workspace not found');
   }
 
   return (

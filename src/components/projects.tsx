@@ -26,16 +26,20 @@ const Projects = ({ open }: { open: () => void }) => {
           className="size-5 text-neutral-500 cursor-pointer hover:opacity-75 transition"
         />
       </div>
-      <div className="flex flex-col items-start gap-y-3">
+      <div className="flex flex-col items-start">
         {data?.documents?.map((project, index) => {
           const href = `/workspaces/${workspaceId}/projects/${project.$id}`;
           const isActive = pathname === href;
 
           return (
-            <Link href={href} key={`${project.$id}-${index}`}>
+            <Link
+              href={href}
+              key={`${project.$id}-${index}`}
+              className="w-full"
+            >
               <div
                 className={cn(
-                  'flex items-center gap-2.5 px-2.5 rounded-md transition hover:opacity-75 cursor-pointer text-neutral-500',
+                  'flex w-full items-center gap-2.5 px-2.5 py-2 rounded-md transition hover:opacity-75 cursor-pointer text-neutral-500',
                   isActive &&
                     'bg-white shadow-sm hover:opacity-100 text-primary'
                 )}

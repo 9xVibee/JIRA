@@ -20,7 +20,12 @@ export const ProjectAvatar = ({
       <div
         className={cn('size-5 relative rounded-md overflow-hidden', className)}
       >
-        <Image src={image} fill alt={name} className="object-cover" />
+        <Image
+          src={image}
+          fill
+          alt={name}
+          className="object-cover w-full h-full"
+        />
       </div>
     );
   }
