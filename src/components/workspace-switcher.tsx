@@ -11,8 +11,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { WorkspaceAvatar } from '@/features/workspaces/components/workspace-avatar';
+import { Skeleton } from './ui/skeleton';
+
 import { useRouter } from 'next/navigation';
+
+import { WorkspaceAvatar } from '@/features/workspaces/components/workspace-avatar';
 import { useWorkspaceId } from '@/features/workspaces/hooks/use-workspace-id';
 
 const WorkspaceSwitcher = ({ open }: { open: () => void }) => {
@@ -20,8 +23,6 @@ const WorkspaceSwitcher = ({ open }: { open: () => void }) => {
   const router = useRouter();
   const workspaceId = useWorkspaceId();
   const { data: workspaces, isPending } = useGetWorkspaces();
-
-  if (isPending || !workspaces) return <>loading....</>;
 
   /* ---------- functions ---------- */
   const onSelect = (id: string) => {
@@ -38,27 +39,31 @@ const WorkspaceSwitcher = ({ open }: { open: () => void }) => {
         />
       </div>
 
-      <Select onValueChange={onSelect} value={workspaceId}>
-        <SelectTrigger className="w-full bg-neutral-200 font-medium p-1 py-6">
-          <SelectValue placeholder="No workspace selected" />
-        </SelectTrigger>
-        <SelectContent>
-          {workspaces.documents.map((workspace) => {
-            return (
-              <SelectItem value={workspace.$id} key={workspace.$id}>
-                <div className="flex justify-start items-center gap-3 font-medium">
-                  <WorkspaceAvatar
-                    name={workspace.name}
-                    image={workspace.imageUrl}
-                  />
+      {isPending || !workspaces ? (
+        <Skeleton className="h-[50px] w-full rounded-md" />
+      ) : (
+        <Select onValueChange={onSelect} value={workspaceId}>
+          <SelectTrigger className="w-full bg-neutral-200 font-medium p-1 py-6">
+            <SelectValue placeholder="No workspace selected" />
+          </SelectTrigger>
+          <SelectContent>
+            {workspaces.documents.map((workspace) => {
+              return (
+                <SelectItem value={workspace.$id} key={workspace.$id}>
+                  <div className="flex justify-start items-center gap-3 font-medium">
+                    <WorkspaceAvatar
+                      name={workspace.name}
+                      image={workspace.imageUrl}
+                    />
 
-                  <span className="truncate">{workspace.name}</span>
-                </div>
-              </SelectItem>
-            );
-          })}
-        </SelectContent>
-      </Select>
+                    <span className="truncate">{workspace.name}</span>
+                  </div>
+                </SelectItem>
+              );
+            })}
+          </SelectContent>
+        </Select>
+      )}
     </div>
   );
 };
