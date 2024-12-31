@@ -17,9 +17,11 @@ import { useRouter } from 'next/navigation';
 
 import { WorkspaceAvatar } from '@/features/workspaces/components/workspace-avatar';
 import { useWorkspaceId } from '@/features/workspaces/hooks/use-workspace-id';
+import { useCreateWorkspaceModal } from '@/features/workspaces/components/use-create-workspace-modal';
 
-const WorkspaceSwitcher = ({ open }: { open: () => void }) => {
+const WorkspaceSwitcher = () => {
   /* ---------- hooks ---------- */
+  const { open } = useCreateWorkspaceModal();
   const router = useRouter();
   const workspaceId = useWorkspaceId();
   const { data: workspaces, isPending } = useGetWorkspaces();

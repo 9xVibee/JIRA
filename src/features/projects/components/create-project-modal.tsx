@@ -2,10 +2,11 @@
 
 import ResponsiveModal from '@/components/responsive-moda';
 import { CreateProjectForm } from './create-project-form';
+import { useCreateProjectModal } from './use-create-project-modal';
 
-import { ModalProps } from '@/features/types';
+const CreateProjectModal = () => {
+  const { isOpen, setIsOpen } = useCreateProjectModal();
 
-const CreateProjectModal = ({ isOpen, setIsOpen }: ModalProps) => {
   return (
     <ResponsiveModal open={isOpen} onOpenChange={setIsOpen}>
       <CreateProjectForm onCancel={() => setIsOpen(false)} />

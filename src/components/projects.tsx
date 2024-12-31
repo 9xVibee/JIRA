@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { useGetProjects } from '@/features/projects/api/use-get-projects';
-
 import { useWorkspaceId } from '@/features/workspaces/hooks/use-workspace-id';
+import { useCreateProjectModal } from '@/features/projects/components/use-create-project-modal';
 
 import { cn } from '@/lib/utils';
 
@@ -14,10 +14,11 @@ import { Skeleton } from './ui/skeleton';
 
 import { ProjectAvatar } from '@/features/projects/components/project-avatar';
 
-const Projects = ({ open }: { open: () => void }) => {
+const Projects = () => {
   const workspaceId = useWorkspaceId();
   const pathname = usePathname();
   const { data, isLoading } = useGetProjects({ workspaceId });
+  const { open } = useCreateProjectModal();
 
   return (
     <div className="flex flex-col gap-y-4">
