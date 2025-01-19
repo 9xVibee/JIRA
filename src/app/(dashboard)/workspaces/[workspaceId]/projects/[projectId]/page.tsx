@@ -30,7 +30,7 @@ const ProjectIdPage = async ({ params }: ProjectIdPageProps) => {
   }
 
   return (
-    <div className="flex flex-col gap-y-4">
+    <div className={`flex flex-col gap-y-4`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-x-2">
           <ProjectAvatar

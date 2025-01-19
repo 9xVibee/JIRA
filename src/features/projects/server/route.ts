@@ -21,7 +21,6 @@ const app = new Hono()
       const storage = c.get('storage');
 
       const { name, workspaceId, image } = c.req.valid('form');
-      console.log(name, workspaceId, image, 'name, workspaceId, image');
 
       let uploadedImageUrl: string | undefined;
 

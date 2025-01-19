@@ -36,7 +36,6 @@ export const CreateProjectForm = ({ onCancel }: CreateProjectFormProps) => {
   const workspaceId = useWorkspaceId();
   // const router = useRouter();
   const { mutate, isPending } = useCreateProject();
-  console.log(isPending, 'isPending');
 
   const form = useForm<z.infer<typeof createProjectSchema>>({
     resolver: zodResolver(
@@ -55,7 +54,6 @@ export const CreateProjectForm = ({ onCancel }: CreateProjectFormProps) => {
       workspaceId,
       image: values.image instanceof File ? values.image : '',
     };
-    console.log(finalValues, 'finalValues');
 
     mutate(
       {

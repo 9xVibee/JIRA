@@ -9,10 +9,39 @@ import { sessionMiddleware } from '@/lib/session-middleware';
 import { createTaskSchema } from '../schemas';
 import { getMember } from '@/features/members/utils';
 
-import { DATABASE_ID, PROJECT_ID, TASK_ID } from '@/config';
-import { TaskStatus } from '../types';
+import { DATABASE_ID, MEMBERS_ID, PROJECT_ID, TASK_ID } from '@/config';
+import { Task, TaskStatus } from '../types';
 
 const app = new Hono()
+  .delete('/:taskId', sessionMiddleware, async (c) => {
+    const user = c.get('user');
+    const databases = c.get('databases');
+    const { taskId } = c.req.param();
+
+    const task = await databases.getDocument<Task>(
+      DATABASE_ID,
+      TASK_ID,
+      taskId
+    );
+
+    const member = await getMember({
+      databases,
+      userId: user.$id,
+      workspaceId: task.workspaceId,
+    });
+
+    if (!member) {
+      return c.json({ error: 'UnAuthorized' }, 401);
+    }
+
+    await databases.deleteDocument(DATABASE_ID, TASK_ID, taskId);
+
+    return c.json({
+      data: {
+        $id: taskId,
+      },
+    });
+  })
   .get(
     '/',
     sessionMiddleware,
@@ -20,11 +49,11 @@ const app = new Hono()
       'query',
       z.object({
         workspaceId: z.string(),
-        projectId: z.string().nullish(),
-        assigneeId: z.string().nullish(),
-        status: z.nativeEnum(TaskStatus),
-        search: z.string().nullish(),
-        dueDate: z.string().nullish(),
+        projectId: z.string().nullish().optional(),
+        assigneeId: z.string().nullish().optional(),
+        status: z.nativeEnum(TaskStatus).optional(),
+        search: z.string().nullish().optional(),
+        dueDate: z.string().nullish().optional(),
       })
     ),
     async (c) => {
@@ -45,10 +74,11 @@ const app = new Hono()
         return c.json({ error: 'UnAuthorized' }, 404);
       }
 
-      const query = [
-        Query.equal('workspaceId', workspaceId),
-        Query.equal('status', status),
-      ];
+      const query = [Query.equal('workspaceId', workspaceId)];
+
+      if (status) {
+        query.push(Query.equal('status', status));
+      }
 
       if (projectId) {
         query.push(Query.equal('projectId', projectId));
@@ -66,7 +96,11 @@ const app = new Hono()
         query.push(Query.search('name', search));
       }
 
-      const tasks = await databases.listDocuments(DATABASE_ID, TASK_ID, query);
+      const tasks = await databases.listDocuments<Task>(
+        DATABASE_ID,
+        TASK_ID,
+        query
+      );
 
       const projectIds = tasks.documents.map((task) => task.projectId);
       const assigneeIds = tasks.documents.map((task) => task.assigneeId);
@@ -79,12 +113,12 @@ const app = new Hono()
 
       const members = await databases.listDocuments(
         DATABASE_ID,
-        TASK_ID,
+        MEMBERS_ID,
         assigneeIds.length > 0 ? [Query.contains('$id', assigneeIds)] : []
       );
 
       const assignes = await Promise.all(
-        members.documents.map(async (member) => {
+        members.documents?.map(async (member) => {
           const user = await users.get(member.userId);
 
           return {
@@ -112,7 +146,10 @@ const app = new Hono()
       });
 
       return c.json({
-        data: populatedTasks,
+        data: {
+          ...tasks,
+          documents: populatedTasks,
+        },
       });
     }
   )

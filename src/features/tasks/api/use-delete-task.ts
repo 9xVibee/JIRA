@@ -6,34 +6,36 @@ import { client } from '@/lib/rpc';
 import { useRouter } from 'next/navigation';
 
 type ResponseType = InferResponseType<
-  (typeof client.api.projects)['$post'],
+  (typeof client.api.tasks)[':taskId']['$delete'],
   200
 >;
-type RequestType = InferRequestType<(typeof client.api.projects)['$post']>;
+type RequestType = InferRequestType<
+  (typeof client.api.tasks)[':taskId']['$delete']
+>;
 
-export const useCreateProject = () => {
+export const useDeleteTask = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
 
   const mutation = useMutation<ResponseType, Error, RequestType>({
-    mutationFn: async ({ form }) => {
-      const response = await client.api.projects['$post']({ form });
+    mutationFn: async ({ param }) => {
+      const response = await client.api.tasks[':taskId']['$delete']({ param });
 
       if (!response.ok) {
-        throw new Error('Failed to create project');
+        throw new Error('Failed to delete task');
       }
 
       return await response.json();
     },
-    onSuccess: ({ data }) => {
-      toast.success('Project created');
-      router.push(`/workspaces/${data.workspaceId}/projects/${data.$id}`);
+    onSuccess: () => {
+      toast.success('Task deleted');
       queryClient.invalidateQueries({
-        queryKey: ['projects', data.workspaceId],
+        queryKey: ['tasks'],
       });
+      router.refresh();
     },
     onError: () => {
-      toast.error('Failed to create project');
+      toast.error('Failed to delete task');
     },
   });
 
