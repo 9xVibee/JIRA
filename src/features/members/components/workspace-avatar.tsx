@@ -16,7 +16,7 @@ export const MemberAvatar = ({
   return (
     <Avatar
       className={cn(
-        'size-10 translate-x-0 border border-neutral-300 rounded-full',
+        'size-5 translate-x-0 border border-neutral-300 rounded-full',
         className
       )}
     >

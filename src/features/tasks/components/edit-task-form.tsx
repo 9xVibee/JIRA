@@ -27,33 +27,28 @@ import { DatePicker } from '@/components/date-picker';
 
 import { cn } from '@/lib/utils';
 
-import { useWorkspaceId } from '@/features/workspaces/hooks/use-workspace-id';
-import { useCreateTask } from '@/features/tasks/api/use-create-task';
-
 import { createTaskSchema } from '../schemas';
-import { TaskStatus } from '../types';
+import { TaskStatus, Task } from '../types';
 
 import { MemberAvatar } from '@/features/members/components/workspace-avatar';
 import { ProjectAvatar } from '@/features/projects/components/project-avatar';
-import { useCreateTaskModal } from '../hooks/use-create-task-modal';
+import { useUpdateTask } from '../api/use-update-task';
 
-interface CreateTaskFormProps {
+interface EditTaskFormProps {
   onCancel?: () => void;
   projectOptions: { id: string; name: string; imageUrl: string }[];
   membersOptions: { id: string; name: string }[];
+  initialValues: Task;
 }
 
-export const CreateTaskForm = ({
+export const EditTaskForm = ({
   onCancel,
   projectOptions,
   membersOptions,
-}: CreateTaskFormProps) => {
-  const workspaceId = useWorkspaceId();
-
-  const { isOpen } = useCreateTaskModal();
-
+  initialValues,
+}: EditTaskFormProps) => {
   // const router = useRouter();
-  const { mutate, isPending } = useCreateTask();
+  const { mutate, isPending } = useUpdateTask();
 
   const form = useForm<z.infer<typeof createTaskSchema>>({
     resolver: zodResolver(
@@ -62,18 +57,18 @@ export const CreateTaskForm = ({
       })
     ),
     defaultValues: {
-      workspaceId: workspaceId,
-      status:
-        isOpen !== 'OPEN'
-          ? TaskStatus[isOpen as TaskStatus]
-          : TaskStatus.BACKLOG,
+      ...initialValues,
+      dueDate: initialValues.dueDate
+        ? new Date(initialValues.dueDate)
+        : undefined,
     },
   });
 
   const onSubmit = (values: z.infer<typeof createTaskSchema>) => {
     mutate(
       {
-        json: { ...values, workspaceId },
+        json: values,
+        param: { taskId: initialValues.$id },
       },
       {
         onSuccess: () => {
@@ -87,7 +82,7 @@ export const CreateTaskForm = ({
   return (
     <Card className="w-full h-full border-none shadow-none">
       <CardHeader className="flex p-7">
-        <CardTitle className="text-xl font-bold">Create a new Task</CardTitle>
+        <CardTitle className="text-xl font-bold">Edit Task</CardTitle>
       </CardHeader>
 
       <div className="px-7">
@@ -261,7 +256,7 @@ export const CreateTaskForm = ({
               </Button>
 
               <Button type="submit" size={'lg'} disabled={isPending}>
-                Create Task
+                Save changes
               </Button>
             </div>
           </form>
