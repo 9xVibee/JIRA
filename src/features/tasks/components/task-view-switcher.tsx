@@ -22,7 +22,13 @@ import { TaskStatus } from '../types';
 import { useBulkUpdateTasks } from '../api/use-bulk-update-task';
 import { DataCalendar } from './data-calendar';
 
-const TaskViewSwitcher = () => {
+interface TaskViewSwitcherProps {
+  hideProjectFilters?: boolean;
+}
+
+const TaskViewSwitcher = ({
+  hideProjectFilters = false,
+}: TaskViewSwitcherProps) => {
   const { mutate } = useBulkUpdateTasks();
   const [view, setView] = useQueryState('task-view', {
     defaultValue: 'table',
@@ -82,7 +88,7 @@ const TaskViewSwitcher = () => {
           </Button>
         </div>
         <DottedSeparator className="my-4" />
-        <DataFilters />
+        <DataFilters hideProjectFilters={hideProjectFilters} />
         <DottedSeparator className="my-4" />
         {isLoading ? (
           <div className="w-full border rounded-lg h-[200px] flex items-center justify-center">

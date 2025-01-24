@@ -17,10 +17,10 @@ import { TaskStatus } from '../types';
 import { useTaskFilters } from '../hooks/use-task-filters';
 
 interface DataFiltersProps {
-  hideProjectFilter?: boolean;
+  hideProjectFilters?: boolean;
 }
 
-export const DataFilters = ({ hideProjectFilter }: DataFiltersProps) => {
+export const DataFilters = ({ hideProjectFilters }: DataFiltersProps) => {
   const workspaceId = useWorkspaceId();
 
   const { data: projects, isLoading: isLoadingProjects } = useGetProjects({
@@ -107,27 +107,29 @@ export const DataFilters = ({ hideProjectFilter }: DataFiltersProps) => {
         </SelectContent>
       </Select>
 
-      <Select
-        defaultValue={!projectId ? 'all' : projectId}
-        onValueChange={(value) => onProjectChange(value)}
-      >
-        <SelectTrigger className="w-full lg:w-auto h-8">
-          <div className="flex items-center pr-2">
-            <FolderIcon className="size-4 mr-2" />
-            <SelectValue placeholder="All Statuses" />
-          </div>
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Projects</SelectItem>
-          <SelectSeparator />
-          {projectOptions &&
-            projectOptions.map((project) => (
-              <SelectItem key={project.id} value={project.id}>
-                {project.name}
-              </SelectItem>
-            ))}
-        </SelectContent>
-      </Select>
+      {!hideProjectFilters && (
+        <Select
+          defaultValue={!projectId ? 'all' : projectId}
+          onValueChange={(value) => onProjectChange(value)}
+        >
+          <SelectTrigger className="w-full lg:w-auto h-8">
+            <div className="flex items-center pr-2">
+              <FolderIcon className="size-4 mr-2" />
+              <SelectValue placeholder="All Statuses" />
+            </div>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Projects</SelectItem>
+            <SelectSeparator />
+            {projectOptions &&
+              projectOptions.map((project) => (
+                <SelectItem key={project.id} value={project.id}>
+                  {project.name}
+                </SelectItem>
+              ))}
+          </SelectContent>
+        </Select>
+      )}
 
       <DatePicker
         placeholder="Due Date"
