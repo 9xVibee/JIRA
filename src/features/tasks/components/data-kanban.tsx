@@ -174,7 +174,6 @@ export const DataKanban = ({ data, onChange }: DataKanbanProps) => {
                       key={task.$id}
                       draggableId={task.$id}
                       index={index}
-                      isDragDisabled={true}
                     >
                       {(provided) => (
                         <div

@@ -20,6 +20,7 @@ import { DataFilters } from './data-filters';
 
 import { TaskStatus } from '../types';
 import { useBulkUpdateTasks } from '../api/use-bulk-update-task';
+import { DataCalendar } from './data-calendar';
 
 const TaskViewSwitcher = () => {
   const { mutate } = useBulkUpdateTasks();
@@ -98,8 +99,8 @@ const TaskViewSwitcher = () => {
                 onChange={onKanbanChange}
               />
             </TabsContent>
-            <TabsContent value="calender" className="mt-0">
-              {JSON.stringify(data)}
+            <TabsContent value="calender" className="mt-0 h-full">
+              <DataCalendar data={data?.documents ?? []} />
             </TabsContent>
           </>
         )}
