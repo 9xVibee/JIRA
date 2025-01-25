@@ -48,7 +48,7 @@ const app = new Hono()
           return {
             ...member,
             email: user.email,
-            name: user.name,
+            name: user.name || user.email,
           };
         })
       );

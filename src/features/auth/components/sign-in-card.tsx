@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/form';
 import { loginSchema } from './../schemas';
 import { useLogin } from '../api/use-login';
+import { signUpWithGithub, signUpWithGoogle } from '@/lib/oauth';
 
 export const SignInCard = () => {
   /* ---------- tanstack state ---------- */
@@ -96,6 +97,7 @@ export const SignInCard = () => {
           variant={'secondary'}
           size={'lg'}
           disabled={isPending}
+          onClick={() => signUpWithGoogle()}
           className="w-full"
         >
           <FcGoogle className="mr-2 size-5" />
@@ -106,6 +108,7 @@ export const SignInCard = () => {
           disabled={isPending}
           size={'lg'}
           className="w-full"
+          onClick={() => signUpWithGithub()}
         >
           <FaGithub className="mr-2 size-5" />
           Login with Github
