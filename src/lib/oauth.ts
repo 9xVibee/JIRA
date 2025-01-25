@@ -9,12 +9,12 @@ import { OAuthProvider } from 'node-appwrite';
 export async function signUpWithGithub() {
   const { account } = await createAdminClient();
 
-  const origin = (await headers()).get('origin');
+  // const origin = (await headers()).get('origin');
 
   const redirectUrl = await account.createOAuth2Token(
     OAuthProvider.Github,
-    `${origin}/oauth`,
-    `${origin}/sign-up`
+    `${process.env.NEXT_PUBLIC_APP_URL}/oauth`,
+    `${process.env.NEXT_PUBLIC_APP_URL}/sign-up`
   );
 
   return redirect(redirectUrl);

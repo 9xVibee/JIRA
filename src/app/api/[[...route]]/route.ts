@@ -12,11 +12,14 @@ import { cors } from 'hono/cors';
 
 const app = new Hono().basePath('/api');
 
+// Get the allowed origin from environment variables
+const allowedOrigin = process.env.NEXT_PUBLIC_APP_URL! || 'http://localhost:3000';
+
 // Enable CORS for specific domains (e.g., your Next.js app)
 app.use(
   '*',
   cors({
-    origin: ['https://jira-clone-gilt.vercel.app', 'http://localhost:3000'], // Allow your Next.js frontend
+    origin: [allowedOrigin], // Allow your Next.js frontend
     allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   })
