@@ -27,6 +27,8 @@ import { useUpdateMember } from '../api/use-update-member';
 import { useConfirm } from '@/hooks/use-confirm';
 
 import { MemberRole } from '../types';
+import { PageLoader } from '@/components/page-loader';
+import { PageError } from '@/components/page-error';
 
 export const MembersList = () => {
   const [members, setMembers] = useState({ documents: [] });
@@ -35,7 +37,7 @@ export const MembersList = () => {
   /* --------------- hooks --------------- */
   const workspaceId = useWorkspaceId();
 
-  const { data } = useGetMembers({ workspaceId });
+  const { data, isLoading } = useGetMembers({ workspaceId });
   const [DeleteDialog, confirmDelete] = useConfirm({
     title: 'Remove Member',
     message: 'This member will be removed from the workspace.',
@@ -79,6 +81,14 @@ export const MembersList = () => {
       setMembers(data);
     }
   }, [data]);
+
+  if (isLoading) {
+    return <PageLoader />;
+  }
+
+  if (!data) {
+    return <PageError />;
+  }
 
   return (
     <div className="w-full h-full flex flex-col gap-y-3">

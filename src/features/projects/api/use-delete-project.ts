@@ -33,7 +33,7 @@ export const useDeleteProject = () => {
         queryKey: ['projects'],
       });
       queryClient.invalidateQueries({
-        queryKey: ['Projectroject', data.$id],
+        queryKey: ['Project', data.$id],
       });
     },
     onError: () => {

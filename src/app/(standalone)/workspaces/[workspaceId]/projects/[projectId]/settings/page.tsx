@@ -1,8 +1,7 @@
 import { getCurrent } from '@/features/auth/queries';
-import { EditProjectForm } from '@/features/projects/components/edit-project-form';
-import { getProject } from '@/features/projects/queries';
 
 import { redirect } from 'next/navigation';
+import { ClientProjectIdSettingPage } from './client';
 
 interface ProjectIdSettingPageProps {
   params: {
@@ -16,19 +15,7 @@ const ProjectIdSettingPage = async ({ params }: ProjectIdSettingPageProps) => {
     redirect('/sign-in');
   }
 
-  const { projectId } = await params;
-
-  const initialValues = await getProject({ projectId });
-
-  if (!initialValues) {
-    throw new Error('Project not found');
-  }
-
-  return (
-    <div className="w-full lg:max-w-lg">
-      <EditProjectForm initialValues={initialValues} />
-    </div>
-  );
+  return <ClientProjectIdSettingPage />;
 };
 
 export default ProjectIdSettingPage;

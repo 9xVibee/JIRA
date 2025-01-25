@@ -25,9 +25,9 @@ import { ArrowLeftIcon, ImageIcon } from 'lucide-react';
 import { updateProjectSchema } from '../schemas';
 import { cn } from '@/lib/utils';
 import { Project } from '../types';
-import { useUpdateWorkspace } from '../api/use-update-project';
 import { useConfirm } from '@/hooks/use-confirm';
 import { useDeleteProject } from '../api/use-delete-project';
+import { useUpdateProject } from '../api/use-update-project';
 
 interface EditProjectFormProps {
   onCancel?: () => void;
@@ -40,7 +40,7 @@ export const EditProjectForm = ({
 }: EditProjectFormProps) => {
   /* ---------- hooks ---------- */
   const router = useRouter();
-  const { mutate, isPending } = useUpdateWorkspace();
+  const { mutate, isPending } = useUpdateProject();
   const { mutate: deleteProject } = useDeleteProject();
 
   const [DeleteDialog, confirmDelete] = useConfirm({
@@ -64,18 +64,10 @@ export const EditProjectForm = ({
       image: values.image instanceof File ? values.image : '',
     };
 
-    mutate(
-      {
-        form: finalValues,
-        param: { projectId: initialValues.$id },
-      },
-      {
-        onSuccess: ({ data }) => {
-          form.reset();
-          router.push(`/workspaces/${data.workspaceId}/projects/${data?.$id}`);
-        },
-      }
-    );
+    mutate({
+      form: finalValues,
+      param: { projectId: initialValues.$id },
+    });
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -147,10 +139,7 @@ export const EditProjectForm = ({
                       <FormItem>
                         <FormLabel>Project Name</FormLabel>
                         <FormControl>
-                          <Input
-                            {...field}
-                            placeholder="Enter workspace name"
-                          />
+                          <Input {...field} placeholder="Enter Project name" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

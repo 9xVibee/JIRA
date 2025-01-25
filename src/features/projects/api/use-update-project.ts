@@ -3,7 +3,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { InferRequestType, InferResponseType } from 'hono';
 
 import { client } from '@/lib/rpc';
-import { useRouter } from 'next/navigation';
 
 type ResponseType = InferResponseType<
   (typeof client.api.projects)[':projectId']['$patch'],
@@ -13,8 +12,7 @@ type RequestType = InferRequestType<
   (typeof client.api.projects)[':projectId']['$patch']
 >;
 
-export const useUpdateWorkspace = () => {
-  const router = useRouter();
+export const useUpdateProject = () => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation<ResponseType, Error, RequestType>({
@@ -32,7 +30,6 @@ export const useUpdateWorkspace = () => {
     },
     onSuccess: ({ data }) => {
       toast.success('Project Updated');
-      router.refresh();
       queryClient.invalidateQueries({
         queryKey: ['projects'],
       });

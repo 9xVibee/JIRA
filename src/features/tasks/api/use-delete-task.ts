@@ -35,7 +35,6 @@ export const useDeleteTask = () => {
       queryClient.invalidateQueries({
         queryKey: ['tasks'],
       });
-      router.refresh();
     },
     onError: () => {
       toast.error('Failed to delete task');

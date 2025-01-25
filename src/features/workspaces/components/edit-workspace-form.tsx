@@ -78,12 +78,6 @@ export const EditWorkspaceForm = ({
         form: finalValues,
         param: { workspaceId: initialValues.$id },
       },
-      {
-        onSuccess: ({ data }) => {
-          form.reset();
-          router.push(`/workspaces/${data?.$id}`);
-        },
-      }
     );
   };
 

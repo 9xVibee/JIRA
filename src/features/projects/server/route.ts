@@ -9,6 +9,7 @@ import { createProjectSchema, updateProjectSchema } from '../schemas';
 import { sessionMiddleware } from '@/lib/session-middleware';
 
 import { DATABASE_ID, PROJECT_ID, IMAGES_BUCKET_ID } from '@/config';
+import { Project } from '../types';
 
 const app = new Hono()
   .post(
@@ -107,6 +108,40 @@ const app = new Hono()
       });
     }
   )
+  .get('/:projectId', sessionMiddleware, async (c) => {
+    const { projectId } = c.req.param();
+    const user = c.get('user');
+    const databases = c.get('databases');
+
+    const project = await databases.getDocument<Project>(
+      DATABASE_ID,
+      PROJECT_ID,
+      projectId
+    );
+
+    if (!project) {
+      return c.json({ error: 'Project not found' }, 404);
+    }
+
+    const member = await getMember({
+      databases,
+      userId: user.$id,
+      workspaceId: project.workspaceId,
+    });
+
+    if (!member) {
+      return c.json(
+        {
+          error: 'Unauthorized',
+        },
+        401
+      );
+    }
+
+    return c.json({
+      data: project,
+    });
+  })
   .patch(
     '/:projectId',
     sessionMiddleware,

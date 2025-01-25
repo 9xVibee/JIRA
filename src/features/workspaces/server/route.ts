@@ -16,6 +16,7 @@ import {
 import { MemberRole } from '@/features/members/types';
 import { createWorkspaceSchema, updateWorkspaceSchema } from '../schemas';
 import { z } from 'zod';
+
 import { Workspace } from '../types';
 
 const app = new Hono()
@@ -43,6 +44,88 @@ const app = new Hono()
 
     return c.json({
       data: workspaces,
+    });
+  })
+  .get('/:workspaceId', sessionMiddleware, async (c) => {
+    const { workspaceId } = c.req.param();
+    const user = c.get('user');
+    const databases = c.get('databases');
+
+    const workspace = await databases.getDocument<Workspace>(
+      DATABASE_ID,
+      WORKSPACES_ID,
+      workspaceId
+    );
+
+    if (!workspaceId) {
+      return c.json(
+        {
+          error: 'workspace not found',
+        },
+        404
+      );
+    }
+
+    const member = await getMember({
+      databases,
+      userId: user.$id,
+      workspaceId,
+    });
+
+    if (!member) {
+      return c.json(
+        {
+          error: 'Unauthorized',
+        },
+        404
+      );
+    }
+
+    return c.json({
+      data: workspace,
+    });
+  })
+  .get('/:workspaceId/info', sessionMiddleware, async (c) => {
+    const databases = c.get('databases');
+    const user = c.get('user');
+    const { workspaceId } = c.req.param();
+
+    const workspace = await databases.getDocument<Workspace>(
+      DATABASE_ID,
+      WORKSPACES_ID,
+      workspaceId
+    );
+
+    if (!workspace) {
+      return c.json(
+        {
+          error: 'Workspace not found',
+        },
+        404
+      );
+    }
+
+    const member = await getMember({
+      databases,
+      userId: user.$id,
+      workspaceId,
+    });
+
+    if (!member) {
+      return c.json(
+        {
+          error: 'Unauthorized',
+        },
+        401
+      );
+    }
+
+    return c.json({
+      data: {
+        $id: workspace.$id,
+        name: workspace.name,
+        imageUrl: workspace.imageUrl,
+      },
     });
   })
   .post(

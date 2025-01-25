@@ -33,7 +33,6 @@ export const useResetInviteCode = () => {
     },
     onSuccess: ({ data }) => {
       toast.success('Workspace invite code reset');
-      router.refresh();
       queryClient.invalidateQueries({
         queryKey: ['workspaces'],
       });
