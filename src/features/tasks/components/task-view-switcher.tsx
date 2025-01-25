@@ -13,14 +13,16 @@ import { DottedSeparator } from '@/components/dotted-separator';
 import { columns } from '@/components/columns';
 import { DataKanban } from './data-kanban';
 import { DataTable } from './data-table';
+import { DataCalendar } from './data-calendar';
 
+import { DataFilters } from './data-filters';
+
+import { useProjectId } from '@/features/projects/hooks/use-project-id';
 import { useCreateTaskModal } from '../hooks/use-create-task-modal';
 import { useTaskFilters } from '../hooks/use-task-filters';
-import { DataFilters } from './data-filters';
 
 import { TaskStatus } from '../types';
 import { useBulkUpdateTasks } from '../api/use-bulk-update-task';
-import { DataCalendar } from './data-calendar';
 
 interface TaskViewSwitcherProps {
   hideProjectFilters?: boolean;
@@ -33,6 +35,7 @@ const TaskViewSwitcher = ({
   const [view, setView] = useQueryState('task-view', {
     defaultValue: 'table',
   });
+  const paramProjectId = useProjectId();
 
   const [{ status, assigneeId, projectId, dueDate, search }] = useTaskFilters();
 
@@ -43,7 +46,7 @@ const TaskViewSwitcher = ({
     workspaceId,
     status,
     assigneeId,
-    projectId,
+    projectId: paramProjectId || projectId,
     dueDate,
     search,
   });

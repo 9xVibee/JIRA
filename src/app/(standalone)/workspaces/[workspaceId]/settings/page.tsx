@@ -4,15 +4,7 @@ import { getCurrent } from '@/features/auth/queries';
 
 import SettingClient from './client';
 
-interface WorkspaceIdSettingPageProps {
-  params: {
-    workspaceId: string;
-  };
-}
-
-const WorkspaceIdSettingPage = async ({
-  params,
-}: WorkspaceIdSettingPageProps) => {
+const WorkspaceIdSettingPage = async () => {
   const user = await getCurrent();
   if (!user) redirect('/sign-in');
 

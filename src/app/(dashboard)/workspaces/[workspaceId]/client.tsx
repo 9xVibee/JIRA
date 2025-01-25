@@ -175,7 +175,6 @@ interface MemberListProps {
 }
 
 export const MembersList = ({ members, total }: MemberListProps) => {
-  const { open: createProject } = useCreateProjectModal();
   const workspaceId = useWorkspaceId();
 
   return (

@@ -26,12 +26,11 @@ import { useDeleteMember } from '../api/use-delete-member';
 import { useUpdateMember } from '../api/use-update-member';
 import { useConfirm } from '@/hooks/use-confirm';
 
-import { MemberRole } from '../types';
+import { Member, MemberRole } from '../types';
 import { PageLoader } from '@/components/page-loader';
 import { PageError } from '@/components/page-error';
 
 export const MembersList = () => {
-  const [members, setMembers] = useState({ documents: [] });
   const [memberId, setMemberId] = useState<string | null>(null);
 
   /* --------------- hooks --------------- */
@@ -64,23 +63,11 @@ export const MembersList = () => {
       { param: { memberId } },
       {
         onSuccess: () => {
-          setMembers((prev) => ({
-            documents: prev.documents.filter(
-              (member) => member.$id !== memberId
-            ),
-          }));
-
           setMemberId(null);
         },
       }
     );
   };
-
-  useEffect(() => {
-    if (data) {
-      setMembers(data);
-    }
-  }, [data]);
 
   if (isLoading) {
     return <PageLoader />;
@@ -106,8 +93,8 @@ export const MembersList = () => {
 
       <div className="p-7 rounded-lg flex flex-col gap-y-2 w-full">
         <AnimatePresence>
-          {members?.documents.map((member, index) => (
-            <Member
+          {data?.documents.map((member, index) => (
+            <MemberComp
               key={`${member.$id}-${index}`}
               deletePending={deletePending}
               updatePending={updatePending}
@@ -124,7 +111,17 @@ export const MembersList = () => {
   );
 };
 
-const Member = ({
+interface MemberProps {
+  member: Member;
+  deletePending: boolean;
+  updatePending: boolean;
+  handleDeleteMember: (memberId: string) => void;
+  handleUpdateMember: (memberId: string, role: MemberRole) => void;
+  index: number;
+  memberId: string | null;
+}
+
+const MemberComp = ({
   member,
   handleDeleteMember,
   handleUpdateMember,
@@ -132,7 +129,7 @@ const Member = ({
   updatePending,
   index,
   memberId,
-}) => {
+}: MemberProps) => {
   const [isPresent, safeToRemove] = usePresence();
   const [scope, animate] = useAnimate();
 
@@ -180,7 +177,7 @@ const Member = ({
 
       exitAnimation();
     }
-  }, [isPresent]);
+  }, [animate, isPresent, safeToRemove, scope]);
 
   return (
     <motion.div

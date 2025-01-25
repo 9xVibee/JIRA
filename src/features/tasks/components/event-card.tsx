@@ -5,12 +5,13 @@ import { MemberAvatar } from '@/features/members/components/workspace-avatar';
 import { ProjectAvatar } from '@/features/projects/components/project-avatar';
 import React from 'react';
 import { useRouter } from 'next/navigation';
+import { Member } from '@/features/members/types';
 
 interface EventCardProps {
   id: string;
   title: string;
   project: Project;
-  assignee: any;
+  assignee: Member;
   status: TaskStatus;
 }
 
