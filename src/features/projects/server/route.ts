@@ -100,10 +100,11 @@ const app = new Hono()
         return c.json({ error: 'UnAuthorized' }, 401);
       }
 
-      const projects = await databases.listDocuments(DATABASE_ID, PROJECT_ID, [
-        Query.orderDesc('$createdAt'),
-        Query.equal('workspaceId', workspaceId),
-      ]);
+      const projects = await databases.listDocuments<Project>(
+        DATABASE_ID,
+        PROJECT_ID,
+        [Query.orderDesc('$createdAt'), Query.equal('workspaceId', workspaceId)]
+      );
 
       return c.json({
         data: projects,
