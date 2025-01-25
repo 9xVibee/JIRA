@@ -8,7 +8,18 @@ import member from '@/features/members/server/route';
 import projects from '@/features/projects/server/route';
 import tasks from '@/features/tasks/server/route';
 
+import { cors } from 'hono/cors';
+
 const app = new Hono().basePath('/api');
+
+// Enable CORS for specific domains (e.g., your Next.js app)
+app.use(
+  '*',
+  cors({
+    origin: ['https://jira-clone-gilt.vercel.app', 'http://localhost:3000'], // Allow your Next.js frontend
+  })
+);
+
 const routes = app
   .route('/auth', auth)
   .route('/workspaces', workspaces)
