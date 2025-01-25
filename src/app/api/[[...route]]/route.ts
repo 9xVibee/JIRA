@@ -17,6 +17,8 @@ app.use(
   '*',
   cors({
     origin: ['https://jira-clone-gilt.vercel.app', 'http://localhost:3000'], // Allow your Next.js frontend
+    allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   })
 );
 
