@@ -26,6 +26,10 @@ export const TaskDescription = ({ task }: TaskDescriptionProps) => {
       json: {
         description: value,
       },
+    }, {
+      onSuccess: () => { 
+        setIsEditing(false);
+      }
     });
   };
 
